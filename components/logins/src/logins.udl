@@ -52,7 +52,16 @@ enum LoginsStorageError {
     "InvalidRecord",
     "InvalidKey",
     "RequestFailed",
-    "Interrupted"
+    "Interrupted",
+};
+
+enum InvalidLoginReason {
+    "EmptyOrigin",
+    "EmptyPassword",
+    "DuplicateLogin",
+    "BothTargets",
+    "NoTarget",
+    "IllegalFieldValue",
 };
 
 interface PasswordStore {

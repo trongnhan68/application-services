@@ -6,8 +6,6 @@ package mozilla.appservices.logins
 
 import com.sun.jna.Native
 import com.sun.jna.Pointer
-//import mozilla.appservices.logins.rust.PasswordSyncAdapter
-//import mozilla.appservices.logins.rust.RustError
 import mozilla.appservices.support.native.toNioDirectBuffer
 import mozilla.appservices.sync15.SyncTelemetryPing
 import java.util.concurrent.atomic.AtomicLong
