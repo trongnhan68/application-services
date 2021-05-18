@@ -13,4 +13,18 @@
 
  - Android and iOS `Branch` objects no longer have access to a `FeatureConfig` object.
 
+## Logins
+
+### ⚠️ Breaking changes ⚠️
+
+Logins now Uniffi-ed!
+
+What Changed:
+
+API Changes for Logins components
+
+- PasswordInfo is now LoginRecord
+  - Changed id to guid to keep it consistent across the board (still takes a string)
+- PasswordStore is now LoginStore
+
 [Full Changelog](https://github.com/mozilla/application-services/compare/v76.0.1...main)

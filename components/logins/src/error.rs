@@ -10,10 +10,98 @@ macro_rules! throw {
     };
 }
 
-/* We have some internal errors that we use that we don't want to expose that we'll keep
-    See `fxa-client` for another example of using an internal error module.
-*/
-pub use crate::internal::error::*;
+//TODO: Comment on this
+#[derive(Debug, thiserror::Error)]
+pub enum ErrorKind {
+    #[error("Invalid login: {0}")]
+    InvalidLogin(InvalidLogin),
+
+    #[error("The `sync_status` column in DB has an illegal value: {0}")]
+    BadSyncStatus(u8),
+
+    #[error("A duplicate GUID is present: {0:?}")]
+    DuplicateGuid(String),
+
+    #[error("No record with guid exists (when one was required): {0:?}")]
+    NoSuchRecord(String),
+
+    // Fennec import only works on empty logins tables.
+    #[error("The logins tables are not empty")]
+    NonEmptyTable,
+
+    #[error("The provided salt is invalid")]
+    InvalidSalt,
+
+    #[error("Error synchronizing: {0}")]
+    SyncAdapterError(#[from] sync15::Error),
+
+    #[error("Error parsing JSON data: {0}")]
+    JsonError(#[from] serde_json::Error),
+
+    #[error("Error executing SQL: {0}")]
+    SqlError(#[from] rusqlite::Error),
+
+    #[error("Error parsing URL: {0}")]
+    UrlParseError(#[from] url::ParseError),
+
+    #[error("{0}")]
+    Interrupted(#[from] interrupt_support::Interrupted),
+}
+
+error_support::define_error! {
+    ErrorKind {
+        (SyncAdapterError, sync15::Error),
+        (JsonError, serde_json::Error),
+        (UrlParseError, url::ParseError),
+        (SqlError, rusqlite::Error),
+        (InvalidLogin, InvalidLogin),
+        (Interrupted, interrupt_support::Interrupted),
+    }
+}
+
+#[derive(Debug, thiserror::Error)]
+pub enum InvalidLogin {
+    // EmptyOrigin error occurs when the login's hostname field is empty.
+    #[error("Origin is empty")]
+    EmptyOrigin,
+    #[error("Password is empty")]
+    EmptyPassword,
+    #[error("Login already exists")]
+    DuplicateLogin,
+    #[error("Both `formSubmitUrl` and `httpRealm` are present")]
+    BothTargets,
+    #[error("Neither `formSubmitUrl` or `httpRealm` are present")]
+    NoTarget,
+    #[error("Login has illegal field: {field_info}")]
+    IllegalFieldValue { field_info: String },
+}
+
+impl Error {
+    // Get a short textual label identifying the type of error that occurred,
+    // but without including any potentially-sensitive information.
+    pub fn label(&self) -> &'static str {
+        match self.kind() {
+            ErrorKind::BadSyncStatus(_) => "BadSyncStatus",
+            ErrorKind::DuplicateGuid(_) => "DuplicateGuid",
+            ErrorKind::NoSuchRecord(_) => "NoSuchRecord",
+            ErrorKind::NonEmptyTable => "NonEmptyTable",
+            ErrorKind::InvalidSalt => "InvalidSalt",
+            ErrorKind::SyncAdapterError(_) => "SyncAdapterError",
+            ErrorKind::JsonError(_) => "JsonError",
+            ErrorKind::UrlParseError(_) => "UrlParseError",
+            ErrorKind::SqlError(_) => "SqlError",
+            ErrorKind::Interrupted(_) => "Interrupted",
+            ErrorKind::InvalidLogin(desc) => match desc {
+                InvalidLogin::EmptyOrigin => "InvalidLogin::EmptyOrigin",
+                InvalidLogin::EmptyPassword => "InvalidLogin::EmptyPassword",
+                InvalidLogin::DuplicateLogin => "InvalidLogin::DuplicateLogin",
+                InvalidLogin::BothTargets => "InvalidLogin::BothTargets",
+                InvalidLogin::NoTarget => "InvalidLogin::NoTarget",
+                InvalidLogin::IllegalFieldValue { .. } => "InvalidLogin::IllegalFieldValue",
+            },
+        }
+    }
+}
 
 // Originally exposed manually via LoginsStorageException.kt.
 #[derive(Debug, thiserror::Error)]
@@ -21,23 +109,23 @@ pub enum LoginsStorageError {
     #[error("Unexpected error: {0}")]
     UnexpectedLoginsStorageError(String),
 
-    // This indicates that the sync authentication is invalid, likely due to having
-    // expired.
+    /// This indicates that the sync authentication is invalid, likely due to having
+    /// expired.
     #[error("SyncAuthInvalid error: {0}")]
     SyncAuthInvalid(String),
 
-    // This is thrown if `lock()`/`unlock()` pairs don't match up.
+    /// This is thrown if `lock()`/`unlock()` pairs don't match up.
     // NOTE: This can be removed once we drop sqlcipher
     #[error("MismatchedLock error: {0}")]
     MismatchedLock(&'static str),
 
-    // This is thrown if `update()` is performed with a record whose ID
-    // does not exist.
+    /// This is thrown if `update()` is performed with a record whose ID
+    /// does not exist.
     #[error("NoSuchRecord error: {0}")]
     NoSuchRecord(String),
 
-    // This is thrown if `add()` is given a record that has an ID, and
-    // that ID does not exist.
+    /// This is thrown if `add()` is given a record that has an ID, and
+    /// that ID does not exist.
     #[error("IdCollision error: {0}")]
     IdCollision(String),
 
@@ -47,19 +135,19 @@ pub enum LoginsStorageError {
     #[error("InvalidRecord error: {0}")]
     InvalidRecord(String, InvalidLoginReason),
 
-    // This error is emitted in two cases:
-    // 1. An incorrect key is used to to open the login database
-    // 2. The file at the path specified is not a sqlite database.
-    // NOTE: Dropping sqlcipher means we will drop (1), so should rename it
+    /// This error is emitted in two cases:
+    /// 1. An incorrect key is used to to open the login database
+    /// 2. The file at the path specified is not a sqlite database.
+    /// NOTE: Dropping sqlcipher means we will drop (1), so should rename it
     #[error("InvalidKey error: {0}")]
     InvalidKey(String),
 
-    // This error is emitted if a request to a sync server failed.
-    // We can probably kill this? The sync manager is what cares about this.
+    /// This error is emitted if a request to a sync server failed.
+    /// We can probably kill this? The sync manager is what cares about this.
     #[error("RequestFailed error: {0}")]
     RequestFailed(String),
 
-    // This error is emitted if a sync or other operation is interrupted.
+    /// This error is emitted if a sync or other operation is interrupted.
     #[error("Interrupted error: {0}")]
     Interrupted(String),
 }
@@ -69,17 +157,17 @@ pub enum LoginsStorageError {
  */
 #[derive(Debug)]
 pub enum InvalidLoginReason {
-    // Origins may not be empty
+    /// Origins may not be empty
     EmptyOrigin,
-    // Passwords may not be empty
+    /// Passwords may not be empty
     EmptyPassword,
-    // The login already exists
+    /// The login already exists
     DuplicateLogin,
-    // Both `httpRealm` and `formSubmitUrl` are non-null
+    /// Both `httpRealm` and `formSubmitUrl` are non-null
     BothTargets,
-    // Both `httpRealm` and `formSubmitUrl` are null
+    /// Both `httpRealm` and `formSubmitUrl` are null
     NoTarget,
-    // Login has illegal field
+    /// Login has illegal field
     IllegalFieldValue,
 }
 

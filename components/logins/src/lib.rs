@@ -15,12 +15,8 @@ mod store;
 mod update_plan;
 mod util;
 
-// Following how fxa-crate hides some of the implementation details we don't want to expose
-mod internal;
-
 uniffi_macros::include_scaffolding!("logins");
 
-// Mostly exposed for the sync manager.
 pub use crate::db::{
     open_and_get_salt, open_and_migrate_to_plaintext_header, LoginDb, LoginsSyncEngine, MigrationMetrics,
     MigrationPhaseMetrics,

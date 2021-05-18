@@ -279,9 +279,9 @@ pub struct Login {
     pub times_used: i64,
 }
 
-/// This struct is identical to the Login struct on purpose
-/// and is strictly for going over via FFI
-/// it was converted from the protobuf
+/// This struct is very similar to the Login struct (on purpose)
+/// and is what we expose to the consumers
+/// The  difference is the guid here takes a String instead of Guid
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, Default)]
 pub struct LoginRecord {
     #[serde(rename = "id")]

@@ -227,22 +227,22 @@ class LoginsStoreCounterMetrics(
                 throw e
             }
             when (e) {
-                is LoginsStorageErrorException.MismatchedLock -> {
+                is LoginsStorageException.MismatchedLock -> {
                     errCount["mismatched_lock"].add()
                 }
-                is LoginsStorageErrorException.NoSuchRecord -> {
+                is LoginsStorageException.NoSuchRecord -> {
                     errCount["no_such_record"].add()
                 }
-                is LoginsStorageErrorException.IdCollision -> {
+                is LoginsStorageException.IdCollision -> {
                     errCount["id_collision"].add()
                 }
-                is LoginsStorageErrorException.InvalidKey -> {
+                is LoginsStorageException.InvalidKey -> {
                     errCount["invalid_key"].add()
                 }
-                is LoginsStorageErrorException.Interrupted -> {
+                is LoginsStorageException.Interrupted -> {
                     errCount["interrupted"].add()
                 }
-                is LoginsStorageErrorException.InvalidRecord -> {
+                is LoginsStorageException.InvalidRecord -> {
                     errCount["invalid_record"].add()
                 }
                 is LoginsStorageException -> {
