@@ -19,12 +19,10 @@
 
 Logins now Uniffi-ed!
 
-What Changed:
-
-API Changes for Logins components
+API Changes for Logins components:
 
 - PasswordInfo is now LoginRecord
-  - Changed id to guid to keep it consistent across the board (still takes a string)
-- PasswordStore is now LoginStore
+  - Changed id to guid to keep it consistent with internal Login struct (still takes a string)
+- Throwing exceptions is now done via [likely name change] LoginsStorageErrorException
 
 [Full Changelog](https://github.com/mozilla/application-services/compare/v76.0.1...main)
