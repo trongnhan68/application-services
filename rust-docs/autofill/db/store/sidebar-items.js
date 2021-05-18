@@ -1,0 +1,1 @@
+initSidebarItems({"struct":[["STORE_FOR_MANAGER",""],["Store",""],["StoreImpl",""]]});

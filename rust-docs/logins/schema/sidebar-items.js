@@ -1,0 +1,1 @@
+initSidebarItems({"constant":[["COMMON_COLS","Every column shared by both tables except for `id`"],["VERSION","Note that firefox-ios is currently on version 3. Version 4 is this version, which adds a metadata table and changes timestamps to be in milliseconds"]]});

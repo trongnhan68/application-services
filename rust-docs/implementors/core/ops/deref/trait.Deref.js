@@ -1,0 +1,15 @@
+(function() {var implementors = {};
+implementors["autofill"] = [{"text":"impl Deref for STORE_FOR_MANAGER","synthetic":false,"types":[]},{"text":"impl Deref for AutofillDb","synthetic":false,"types":[]}];
+implementors["fxa_client"] = [{"text":"impl Deref for GetDeviceResponse","synthetic":false,"types":[]}];
+implementors["logins"] = [{"text":"impl Deref for LoginDb","synthetic":false,"types":[]}];
+implementors["logins_ffi"] = [{"text":"impl Deref for STORES","synthetic":false,"types":[]}];
+implementors["nss"] = [{"text":"impl Deref for PrivateKey","synthetic":false,"types":[]},{"text":"impl Deref for PublicKey","synthetic":false,"types":[]}];
+implementors["places"] = [{"text":"impl&lt;'a&gt; Deref for SyncConn&lt;'a&gt;","synthetic":false,"types":[]},{"text":"impl Deref for GLOBAL_BOOKMARK_CHANGE_COUNTERS","synthetic":false,"types":[]},{"text":"impl Deref for PlacesDb","synthetic":false,"types":[]},{"text":"impl&lt;'conn&gt; Deref for PlacesTransaction&lt;'conn&gt;","synthetic":false,"types":[]},{"text":"impl&lt;'a&gt; Deref for HistoryEngine&lt;'a&gt;","synthetic":false,"types":[]},{"text":"impl Deref for NOW","synthetic":false,"types":[]},{"text":"impl Deref for SEARCH_QUERY","synthetic":false,"types":[]}];
+implementors["places_ffi"] = [{"text":"impl Deref for APIS","synthetic":false,"types":[]}];
+implementors["push"] = [{"text":"impl Deref for PushDb","synthetic":false,"types":[]}];
+implementors["sql_support"] = [{"text":"impl&lt;'conn&gt; Deref for UncheckedTransaction&lt;'conn&gt;","synthetic":false,"types":[]},{"text":"impl&lt;'conn&gt; Deref for MaybeCached&lt;'conn&gt;","synthetic":false,"types":[]}];
+implementors["sync15"] = [{"text":"impl&lt;T&gt; Deref for BsoRecord&lt;T&gt;","synthetic":false,"types":[]}];
+implementors["sync_guid"] = [{"text":"impl Deref for Guid","synthetic":false,"types":[]}];
+implementors["tabs_ffi"] = [{"text":"impl Deref for STORES","synthetic":false,"types":[]}];
+implementors["viaduct"] = [{"text":"impl Deref for HeaderName","synthetic":false,"types":[]}];
+if (window.register_implementors) {window.register_implementors(implementors);} else {window.pending_implementors = implementors;}})()

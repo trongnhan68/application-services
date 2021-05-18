@@ -1,0 +1,22 @@
+(function() {var implementors = {};
+implementors["autofill"] = [{"text":"impl Display for Error","synthetic":false,"types":[]}];
+implementors["crashtest"] = [{"text":"impl Display for CrashTestError","synthetic":false,"types":[]}];
+implementors["ffi_support"] = [{"text":"impl Display for HandleError","synthetic":false,"types":[]}];
+implementors["fxa_client"] = [{"text":"impl Display for ErrorKind","synthetic":false,"types":[]},{"text":"impl Display for Error","synthetic":false,"types":[]},{"text":"impl Display for FxaError","synthetic":false,"types":[]}];
+implementors["interrupt_support"] = [{"text":"impl Display for Interrupted","synthetic":false,"types":[]}];
+implementors["logins"] = [{"text":"impl Display for ErrorKind","synthetic":false,"types":[]},{"text":"impl Display for Error","synthetic":false,"types":[]},{"text":"impl Display for InvalidLogin","synthetic":false,"types":[]}];
+implementors["nimbus"] = [{"text":"impl Display for NimbusError","synthetic":false,"types":[]}];
+implementors["nss"] = [{"text":"impl Display for ErrorKind","synthetic":false,"types":[]},{"text":"impl Display for Error","synthetic":false,"types":[]}];
+implementors["places"] = [{"text":"impl Display for ErrorKind","synthetic":false,"types":[]},{"text":"impl Display for Error","synthetic":false,"types":[]},{"text":"impl Display for InvalidPlaceInfo","synthetic":false,"types":[]},{"text":"impl Display for Corruption","synthetic":false,"types":[]},{"text":"impl Display for InvalidVisitType","synthetic":false,"types":[]},{"text":"impl Display for ServerVisitTimestamp","synthetic":false,"types":[]},{"text":"impl Display for RowId","synthetic":false,"types":[]}];
+implementors["push"] = [{"text":"impl Display for Error","synthetic":false,"types":[]},{"text":"impl Display for ErrorKind","synthetic":false,"types":[]}];
+implementors["rc_crypto"] = [{"text":"impl Display for ErrorKind","synthetic":false,"types":[]},{"text":"impl Display for Error","synthetic":false,"types":[]}];
+implementors["sql_support"] = [{"text":"impl Display for QueryPlan","synthetic":false,"types":[]},{"text":"impl&lt;'a, F&gt; Display for RepeatDisplay&lt;'a, F&gt; <span class=\"where fmt-newline\">where<br>&nbsp;&nbsp;&nbsp;&nbsp;F: Fn(usize, &amp;mut Formatter&lt;'_&gt;) -&gt; Result,&nbsp;</span>","synthetic":false,"types":[]}];
+implementors["sync15"] = [{"text":"impl Display for ErrorKind","synthetic":false,"types":[]},{"text":"impl Display for Error","synthetic":false,"types":[]}];
+implementors["sync15_traits"] = [{"text":"impl Display for PayloadError","synthetic":false,"types":[]},{"text":"impl Display for UnacceptableBaseUrl","synthetic":false,"types":[]},{"text":"impl Display for RequestOrder","synthetic":false,"types":[]},{"text":"impl Display for ServerTimestamp","synthetic":false,"types":[]}];
+implementors["sync_guid"] = [{"text":"impl Display for Guid","synthetic":false,"types":[]}];
+implementors["sync_manager"] = [{"text":"impl Display for ErrorKind","synthetic":false,"types":[]},{"text":"impl Display for Error","synthetic":false,"types":[]}];
+implementors["tabs"] = [{"text":"impl Display for ErrorKind","synthetic":false,"types":[]},{"text":"impl Display for Error","synthetic":false,"types":[]}];
+implementors["types"] = [{"text":"impl Display for Timestamp","synthetic":false,"types":[]}];
+implementors["viaduct"] = [{"text":"impl Display for InvalidHeaderName","synthetic":false,"types":[]},{"text":"impl Display for HeaderName","synthetic":false,"types":[]},{"text":"impl Display for Header","synthetic":false,"types":[]},{"text":"impl Display for Error","synthetic":false,"types":[]},{"text":"impl Display for UnexpectedStatus","synthetic":false,"types":[]},{"text":"impl Display for Method","synthetic":false,"types":[]}];
+implementors["webext_storage"] = [{"text":"impl Display for ErrorKind","synthetic":false,"types":[]},{"text":"impl Display for Error","synthetic":false,"types":[]}];
+if (window.register_implementors) {window.register_implementors(implementors);} else {window.pending_implementors = implementors;}})()

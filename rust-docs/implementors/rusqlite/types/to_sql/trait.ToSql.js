@@ -1,0 +1,5 @@
+(function() {var implementors = {};
+implementors["places"] = [{"text":"impl ToSql for VisitTransitionSet","synthetic":false,"types":[]},{"text":"impl ToSql for VisitTransition","synthetic":false,"types":[]},{"text":"impl ToSql for BookmarkType","synthetic":false,"types":[]},{"text":"impl ToSql for SyncStatus","synthetic":false,"types":[]},{"text":"impl ToSql for SyncedBookmarkKind","synthetic":false,"types":[]},{"text":"impl ToSql for SyncedBookmarkValidity","synthetic":false,"types":[]},{"text":"impl ToSql for MatchBehavior","synthetic":false,"types":[]},{"text":"impl ToSql for SearchBehavior","synthetic":false,"types":[]},{"text":"impl ToSql for RowId","synthetic":false,"types":[]}];
+implementors["sync_guid"] = [{"text":"impl ToSql for Guid","synthetic":false,"types":[]}];
+implementors["types"] = [{"text":"impl ToSql for Timestamp","synthetic":false,"types":[]}];
+if (window.register_implementors) {window.register_implementors(implementors);} else {window.pending_implementors = implementors;}})()

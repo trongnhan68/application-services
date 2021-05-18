@@ -1,0 +1,1 @@
+initSidebarItems({"enum":[["ErrorKind",""],["InvalidLogin",""]],"mod":[["msg_types",""],["schema","Logins Schema v4The schema we use is a evolution of the firefox-ios logins database format. There are three tables:"]],"struct":[["Error",""],["Login",""],["LoginDb",""],["LoginStore",""],["PasswordStore",""]],"type":[["Result",""]]});

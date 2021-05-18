@@ -1,0 +1,6 @@
+(function() {var implementors = {};
+implementors["nss"] = [{"text":"impl Drop for SymKey","synthetic":false,"types":[]},{"text":"impl Drop for PrivateKey","synthetic":false,"types":[]},{"text":"impl Drop for PublicKey","synthetic":false,"types":[]},{"text":"impl Drop for GenericObject","synthetic":false,"types":[]},{"text":"impl Drop for Context","synthetic":false,"types":[]},{"text":"impl Drop for Slot","synthetic":false,"types":[]},{"text":"impl Drop for AlgorithmID","synthetic":false,"types":[]}];
+implementors["places"] = [{"text":"impl&lt;'a&gt; Drop for SyncConn&lt;'a&gt;","synthetic":false,"types":[]},{"text":"impl Drop for PlacesDb","synthetic":false,"types":[]},{"text":"impl Drop for ExecuteOnDrop&lt;'_&gt;","synthetic":false,"types":[]}];
+implementors["rc_log_ffi"] = [{"text":"impl Drop for LogAdapterState","synthetic":false,"types":[]}];
+implementors["sql_support"] = [{"text":"impl&lt;'conn&gt; Drop for UncheckedTransaction&lt;'conn&gt;","synthetic":false,"types":[]}];
+if (window.register_implementors) {window.register_implementors(implementors);} else {window.pending_implementors = implementors;}})()

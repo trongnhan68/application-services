@@ -1,0 +1,10 @@
+(function() {var implementors = {};
+implementors["ffi_support"] = [{"text":"impl Ord for ErrorCode","synthetic":false,"types":[]},{"text":"impl Ord for HandleError","synthetic":false,"types":[]}];
+implementors["places"] = [{"text":"impl Ord for InvalidVisitType","synthetic":false,"types":[]},{"text":"impl Ord for BookmarkType","synthetic":false,"types":[]},{"text":"impl Ord for SyncStatus","synthetic":false,"types":[]},{"text":"impl Ord for SyncedBookmarkKind","synthetic":false,"types":[]},{"text":"impl Ord for SyncedBookmarkValidity","synthetic":false,"types":[]},{"text":"impl Ord for ServerVisitTimestamp","synthetic":false,"types":[]},{"text":"impl Ord for FennecBookmarkType","synthetic":false,"types":[]},{"text":"impl Ord for IosBookmarkType","synthetic":false,"types":[]},{"text":"impl Ord for SearchBehavior","synthetic":false,"types":[]},{"text":"impl Ord for RowId","synthetic":false,"types":[]},{"text":"impl Ord for SearchResultReason","synthetic":false,"types":[]}];
+implementors["sync15"] = [{"text":"impl Ord for Sync15StorageClientInit","synthetic":false,"types":[]},{"text":"impl Ord for Command","synthetic":false,"types":[]}];
+implementors["sync15_traits"] = [{"text":"impl Ord for RequestOrder","synthetic":false,"types":[]}];
+implementors["sync_guid"] = [{"text":"impl Ord for Guid","synthetic":false,"types":[]}];
+implementors["sync_manager"] = [{"text":"impl Ord for SyncReason","synthetic":false,"types":[]},{"text":"impl Ord for DeviceType","synthetic":false,"types":[]},{"text":"impl Ord for ServiceStatus","synthetic":false,"types":[]}];
+implementors["types"] = [{"text":"impl Ord for Timestamp","synthetic":false,"types":[]}];
+implementors["viaduct"] = [{"text":"impl Ord for HeaderName","synthetic":false,"types":[]},{"text":"impl Ord for Header","synthetic":false,"types":[]},{"text":"impl Ord for Method","synthetic":false,"types":[]}];
+if (window.register_implementors) {window.register_implementors(implementors);} else {window.pending_implementors = implementors;}})()
