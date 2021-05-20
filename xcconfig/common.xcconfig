@@ -14,7 +14,7 @@ DYLIB_INSTALL_NAME_BASE = @rpath
 LD_RUNPATH_SEARCH_PATHS = @executable_path/Frameworks @loader_path/Frameworks
 
 SWIFT_VERSION = 5.0
-ENABLE_BITCODE = NO
+ENABLE_BITCODE = YES
 
 SWIFT_OPTIMIZATION_LEVEL_debug = -Onone
 SWIFT_OPTIMIZATION_LEVEL_release = -O
