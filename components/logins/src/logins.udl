@@ -13,8 +13,8 @@ namespace logins {
 
 
 // Converted from mozilla.appservices.logins.protobuf.rs
-dictionary LoginRecord {
-    string guid;
+dictionary Login {
+    string id;
     string hostname;
     string password;
     string username;
@@ -68,7 +68,7 @@ enum InvalidLoginReason {
     "IllegalFieldValue",
 };
 
-interface PasswordStore {
+interface LoginStore {
     [Throws=LoginsStorageError]
     constructor(string path, [ByRef] string encryption_key);
 
@@ -76,10 +76,10 @@ interface PasswordStore {
     constructor(string path, [ByRef] string encryption_key, [ByRef] string salt);
 
     [Throws=LoginsStorageError]
-    void check_valid_with_no_dupes(LoginRecord record);
+    void check_valid_with_no_dupes([ByRef] Login record);
 
     [Throws=LoginsStorageError]
-    string add(LoginRecord record);
+    string add(Login record);
 
     [Throws=LoginsStorageError]
     boolean delete([ByRef] string id);
@@ -101,20 +101,20 @@ interface PasswordStore {
     void touch([ByRef] string id);
 
     [Throws=LoginsStorageError]
-    sequence<LoginRecord> list();
+    sequence<Login> list();
 
     [Throws=LoginsStorageError]
-    sequence<LoginRecord> get_by_base_domain([ByRef] string base_domain);
+    sequence<Login> get_by_base_domain([ByRef] string base_domain);
 
     [Throws=LoginsStorageError]
-    sequence<LoginRecord> potential_dupes_ignoring_username(LoginRecord record);
+    sequence<Login> potential_dupes_ignoring_username(Login record);
 
     [Throws=LoginsStorageError]
-    LoginRecord? get([ByRef] string id);
+    Login? get([ByRef] string id);
 
     [Throws=LoginsStorageError]
-    void update(LoginRecord record);
+    void update(Login record);
 
     [Throws=LoginsStorageError]
-    MigrationMetrics import_multiple(sequence<LoginRecord> record);
+    MigrationMetrics import_multiple(sequence<Login> record);
 };

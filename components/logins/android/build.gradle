@@ -72,27 +72,6 @@ configurations {
     jnaForTest
 }
 
-protobuf {
-    protoc {
-        // This is a hack for Apple M1 since protobuf does not compile for M1s yet
-        // However, M1s can just use the x86_64 just fine
-        if (osdetector.os == "osx") {
-            artifact = 'com.google.protobuf:protoc:3.11.4:osx-x86_64'
-        } else {
-            artifact = 'com.google.protobuf:protoc:3.11.4'
-        }
-    }
-    generateProtoTasks {
-        all().each { task ->
-            task.builtins {
-                java {
-                    option "lite"
-                }
-            }
-        }
-    }
-}
-
 // Needs to happen before `dependencies` in order for the variables
 // exposed by the plugin to be available for this project.
 apply plugin: "org.mozilla.telemetry.glean-gradle-plugin"

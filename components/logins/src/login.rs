@@ -238,9 +238,7 @@ use url::Url;
 #[derive(Debug, Clone, Hash, PartialEq, Serialize, Deserialize, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct Login {
-    #[serde(rename = "id")]
-    pub guid: Guid,
-
+    pub id: String,
     pub hostname: String,
 
     // rename_all = "camelCase" by default will do formSubmitUrl, but we can just
@@ -279,26 +277,6 @@ pub struct Login {
     pub times_used: i64,
 }
 
-/// This struct is very similar to the Login struct (on purpose)
-/// and is what we expose to the consumers
-/// The  difference is the guid here takes a String instead of Guid
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, Default)]
-pub struct LoginRecord {
-    #[serde(rename = "id")]
-    pub guid: std::string::String,
-    pub hostname: std::string::String,
-    pub password: std::string::String,
-    pub username: std::string::String,
-    pub http_realm: ::std::option::Option<std::string::String>,
-    pub form_submit_url: ::std::option::Option<std::string::String>,
-    pub username_field: std::string::String,
-    pub password_field: std::string::String,
-    pub times_used: i64,
-    pub time_created: i64,
-    pub time_last_used: i64,
-    pub time_password_changed: i64,
-}
-
 // Quiet clippy, since this function is passed to deserialiaze_with...
 #[allow(clippy::unnecessary_wraps)]
 fn deserialize_timestamp<'de, D>(deserializer: D) -> std::result::Result<i64, D::Error>
@@ -319,13 +297,12 @@ fn string_or_default(row: &Row<'_>, col: &str) -> Result<String> {
 
 impl Login {
     #[inline]
-    pub fn guid(&self) -> &Guid {
-        &self.guid
+    pub fn guid(&self) -> Guid {
+        Guid::from_string(self.id.clone())
     }
-
     #[inline]
     pub fn guid_str(&self) -> &str {
-        self.guid.as_str()
+        &self.id
     }
 
     /// Checks whether the Login is valid, without attempting to fix any fields.
@@ -418,13 +395,13 @@ impl Login {
                     if !fixup {
                         throw!($err)
                     }
-                    log::warn!("Fixing login record {}: {:?}", self.guid, $err);
+                    log::warn!("Fixing login record {}: {:?}", self.guid(), $err);
                     let fixed: Result<&mut Login> =
                         Ok(maybe_fixed.get_or_insert_with(|| self.clone()));
                     fixed
                 }
             };
-        };
+        }
 
         if self.hostname.is_empty() {
             throw!(InvalidLogin::EmptyOrigin);
@@ -538,7 +515,7 @@ impl Login {
 
     pub(crate) fn from_row(row: &Row<'_>) -> Result<Login> {
         let login = Login {
-            guid: row.get("guid")?,
+            id: row.get("guid")?,
             password: row.get("password")?,
             username: string_or_default(row, "username")?,
 
@@ -565,44 +542,6 @@ impl Login {
     }
 }
 
-impl From<Login> for LoginRecord {
-    fn from(login: Login) -> Self {
-        Self {
-            guid: login.guid.into_string(),
-            hostname: login.hostname,
-            password: login.password,
-            username: login.username,
-            http_realm: login.http_realm,
-            form_submit_url: login.form_submit_url,
-            username_field: login.username_field,
-            password_field: login.password_field,
-            times_used: login.times_used,
-            time_created: login.time_created,
-            time_last_used: login.time_last_used,
-            time_password_changed: login.time_password_changed,
-        }
-    }
-}
-
-impl From<LoginRecord> for Login {
-    fn from(info: LoginRecord) -> Self {
-        Self {
-            guid: Guid::from_string(info.guid),
-            hostname: info.hostname,
-            password: info.password,
-            username: info.username,
-            http_realm: info.http_realm,
-            form_submit_url: info.form_submit_url,
-            username_field: info.username_field,
-            password_field: info.password_field,
-            times_used: info.times_used,
-            time_created: info.time_created,
-            time_last_used: info.time_last_used,
-            time_password_changed: info.time_password_changed,
-        }
-    }
-}
-
 #[derive(Clone, Debug)]
 pub(crate) struct MirrorLogin {
     pub login: Login,
@@ -613,7 +552,7 @@ pub(crate) struct MirrorLogin {
 impl MirrorLogin {
     #[inline]
     pub fn guid_str(&self) -> &str {
-        self.login.guid_str()
+        &self.login.id
     }
 
     pub(crate) fn from_row(row: &Row<'_>) -> Result<MirrorLogin> {

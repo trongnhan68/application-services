@@ -4,13 +4,7 @@
 
 package mozilla.appservices.logins
 
-import com.sun.jna.Native
-import com.sun.jna.Pointer
-import mozilla.appservices.support.native.toNioDirectBuffer
-import mozilla.appservices.sync15.SyncTelemetryPing
-import java.util.concurrent.atomic.AtomicLong
 import java.util.concurrent.atomic.AtomicReference
-import org.json.JSONObject
 import org.mozilla.appservices.logins.GleanMetrics.LoginsStore as LoginsStoreMetrics
 
 /**
@@ -29,16 +23,16 @@ typealias LoginsStorageException = LoginsStorageErrorException
 
 /**
  * An artifact of the uniffi conversion - a thin-ish wrapper around a
-   PasswordStore.
+   LoginStore.
  */
 class DatabaseLoginsStorage(private val dbPath: String) : AutoCloseable {
-    private var store: AtomicReference<PasswordStore> = AtomicReference()
+    private var store: AtomicReference<LoginStore> = AtomicReference()
 
     fun isLocked(): Boolean {
         return this.store.get() == null
     }
 
-    private fun checkUnlocked(): PasswordStore {
+    private fun checkUnlocked(): LoginStore {
         val store = this.store.get() ?: throw LoginsStorageException("Using DatabaseLoginsStorage without unlocking first")
         return store
     }
@@ -56,7 +50,7 @@ class DatabaseLoginsStorage(private val dbPath: String) : AutoCloseable {
     @Synchronized
     @Throws(LoginsStorageException::class)
     fun unlock(encryptionKey: String) {
-        val store = PasswordStore(dbPath, encryptionKey)
+        val store = LoginStore(dbPath, encryptionKey)
         if (this.store.getAndSet(store) != null) {
             // this seems wrong?
             throw LoginsStorageErrorException.MismatchedLock("Unlock called when we are already unlocked")
@@ -101,7 +95,7 @@ class DatabaseLoginsStorage(private val dbPath: String) : AutoCloseable {
     }
 
     @Throws(LoginsStorageException::class)
-    fun get(id: String): LoginRecord? {
+    fun get(id: String): Login? {
         return readQueryCounters.measure {
             checkUnlocked().get(id)
         }
@@ -115,35 +109,35 @@ class DatabaseLoginsStorage(private val dbPath: String) : AutoCloseable {
     }
 
     @Throws(LoginsStorageException::class)
-    fun list(): List<LoginRecord> {
+    fun list(): List<Login> {
         return readQueryCounters.measure {
             checkUnlocked().list()
         }
     }
 
     @Throws(LoginsStorageException::class)
-    fun getByBaseDomain(baseDomain: String): List<LoginRecord> {
+    fun getByBaseDomain(baseDomain: String): List<Login> {
         return readQueryCounters.measure {
             checkUnlocked().getByBaseDomain(baseDomain)
         }
     }
 
     @Throws(LoginsStorageException::class)
-    fun add(login: LoginRecord): String {
+    fun add(login: Login): String {
         return writeQueryCounters.measure {
             checkUnlocked().add(login)
         }
     }
 
     @Throws(LoginsStorageException::class)
-    fun importLogins(logins: List<LoginRecord>): MigrationMetrics {
+    fun importLogins(logins: List<Login>): MigrationMetrics {
         return writeQueryCounters.measure {
             checkUnlocked().importMultiple(logins)
         }
     }
 
     @Throws(LoginsStorageException::class)
-    fun update(login: LoginRecord) {
+    fun update(login: Login) {
         return writeQueryCounters.measure {
             checkUnlocked().update(login)
         }
@@ -151,14 +145,14 @@ class DatabaseLoginsStorage(private val dbPath: String) : AutoCloseable {
 
     @Synchronized
     @Throws(LoginsStorageException::class)
-    fun potentialDupesIgnoringUsername(login: LoginRecord): List<LoginRecord> {
+    fun potentialDupesIgnoringUsername(login: Login): List<Login> {
         return readQueryCounters.measure {
             checkUnlocked().potentialDupesIgnoringUsername(login)
         }
     }
 
     @Throws(LoginsStorageErrorException.InvalidRecord::class)
-    fun ensureValid(login: LoginRecord) {
+    fun ensureValid(login: Login) {
         readQueryCounters.measureIgnoring({ e -> e is LoginsStorageErrorException.InvalidRecord }) {
             checkUnlocked().checkValidWithNoDupes(login)
         }
@@ -227,22 +221,22 @@ class LoginsStoreCounterMetrics(
                 throw e
             }
             when (e) {
-                is LoginsStorageException.MismatchedLock -> {
+                is LoginsStorageErrorException.MismatchedLock -> {
                     errCount["mismatched_lock"].add()
                 }
-                is LoginsStorageException.NoSuchRecord -> {
+                is LoginsStorageErrorException.NoSuchRecord -> {
                     errCount["no_such_record"].add()
                 }
-                is LoginsStorageException.IdCollision -> {
+                is LoginsStorageErrorException.IdCollision -> {
                     errCount["id_collision"].add()
                 }
-                is LoginsStorageException.InvalidKey -> {
+                is LoginsStorageErrorException.InvalidKey -> {
                     errCount["invalid_key"].add()
                 }
-                is LoginsStorageException.Interrupted -> {
+                is LoginsStorageErrorException.Interrupted -> {
                     errCount["interrupted"].add()
                 }
-                is LoginsStorageException.InvalidRecord -> {
+                is LoginsStorageErrorException.InvalidRecord -> {
                     errCount["invalid_record"].add()
                 }
                 is LoginsStorageException -> {

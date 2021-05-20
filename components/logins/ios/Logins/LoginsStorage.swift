@@ -5,7 +5,6 @@
 import Foundation
 import UIKit
 
-
 typealias LoginsStoreError = LoginsStorageError
 
 /*
@@ -13,9 +12,8 @@ typealias LoginsStoreError = LoginsStorageError
 * similar to its kotlin equiavlent, however the only thing preventing this from being removed is
 * the queue.sync which we should be moved over to the consumer side of things
 */
-// swiftlint:disable type_body_length
 open class LoginsStorage {
-    private var store: PasswordStore?
+    private var store: LoginStore?
     let dbPath: String
     // It's not 100% clear to me that this is necessary, but without it
     // we might have a data race between reading `interruptHandle` in
@@ -52,7 +50,7 @@ open class LoginsStorage {
 
     // helper to reduce boilerplate, we don't use queue.sync
     // since we expect the caller to do so.
-    private func getUnlockedStore() throws -> PasswordStore {
+    private func getUnlockedStore() throws -> LoginStore {
         if self.store == nil {
             throw LoginsStoreError.MismatchedLock(message: "Mismatched Lock")
         }
@@ -92,13 +90,13 @@ open class LoginsStorage {
     }
 
     private func doOpen(_ key: String, salt: String?) throws {
-        if(self.store != nil) {
+        if self.store != nil {
             return
         }
         if let salt = salt {
-            self.store = try PasswordStore.newWithSalt(path: self.dbPath, encryptionKey: key, salt: salt)
+            self.store = try LoginStore.newWithSalt(path: self.dbPath, encryptionKey: key, salt: salt)
         } else {
-            self.store = try PasswordStore(path: self.dbPath, encryptionKey: key)
+            self.store = try LoginStore(path: self.dbPath, encryptionKey: key)
             }
         }
 
@@ -174,7 +172,7 @@ open class LoginsStorage {
     /// Synchronize with the server. Returns the sync telemetry "ping" as a JSON
     /// string.
     open func sync(unlockInfo: SyncUnlockInfo) throws -> String {
-        //TODO: Need to conver sync
+        // TODO: Need to conver sync
 //        return try queue.sync {
 //            let engine = try self.getUnlocked()
 //            let ptr = try LoginsStoreError.unwrap { err in

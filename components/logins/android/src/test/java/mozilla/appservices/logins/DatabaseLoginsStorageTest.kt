@@ -44,7 +44,7 @@
 
 //         store.unlock(encryptionKey)
 
-//         store.add(LoginRecord(
+//         store.add(Login(
 //                 guid = "aaaaaaaaaaaa",
 //                 hostname = "https://www.example.com",
 //                 httpRealm = "Something",
@@ -59,7 +59,7 @@
 //                 timePasswordChanged = 0
 //         ))
 
-//         store.add(LoginRecord(
+//         store.add(Login(
 //                 guid = "bbbbbbbbbbbb",
 //                 username = "Foobar2000",
 //                 hostname = "https://www.example.org",
@@ -150,7 +150,7 @@
 //         assert(!LoginsStoreMetrics.writeQueryCount.testHasValue())
 //         assert(!LoginsStoreMetrics.writeQueryErrorCount["invalid_record"].testHasValue())
 
-//         store.add(LoginRecord(
+//         store.add(Login(
 //                 guid = "aaaaaaaaaaaa",
 //                 hostname = "https://www.example.com",
 //                 httpRealm = "Something",
@@ -169,7 +169,7 @@
 //         assert(!LoginsStoreMetrics.writeQueryErrorCount["invalid_record"].testHasValue())
 
 //         // N.B. this is invalid due to `formSubmitURL` being an invalid url.
-//         val invalid = LoginRecord(
+//         val invalid = Login(
 //             guid = "bbbbbbbbbbbb",
 //             hostname = "https://test.example.com",
 //             formSubmitUrl = "not a url",
@@ -332,7 +332,7 @@
 //         test.unlock(encryptionKey)
 
 //         expectException(LoginsStorageErrorException.IdCollision::class.java) {
-//             test.add(LoginRecord(
+//             test.add(Login(
 //                     guid = "aaaaaaaaaaaa",
 //                     hostname = "https://www.foo.org",
 //                     httpRealm = "Some Realm",
@@ -354,7 +354,7 @@
 //             }
 //         }
 
-//         val toInsert = LoginRecord(
+//         val toInsert = Login(
 //                 guid = "",
 //                 hostname = "https://www.foo.org",
 //                 httpRealm = "Some Realm",
@@ -386,7 +386,7 @@
 //         assertNotEquals(0L, record.timeCreated)
 //         assertNotEquals(0L, record.timePasswordChanged)
 
-//         val specificID = test.add(LoginRecord(
+//         val specificID = test.add(Login(
 //                 guid = "123412341234",
 //                 hostname = "http://www.bar.com",
 //                 formSubmitUrl = "http://login.bar.com",
@@ -411,7 +411,7 @@
 //         val test = getTestStore()
 //         test.unlock(encryptionKey)
 
-//         test.add(LoginRecord(
+//         test.add(Login(
 //                 guid = "bbbbb",
 //                 hostname = "https://www.foo.org",
 //                 httpRealm = "Some Realm",
@@ -426,7 +426,7 @@
 //                 timePasswordChanged = 0
 //         ))
 
-//         val dupeLogin = LoginRecord(
+//         val dupeLogin = Login(
 //                 guid = "",
 //                 hostname = "https://www.foo.org",
 //                 httpRealm = "Some Realm",
@@ -441,7 +441,7 @@
 //                 timePasswordChanged = 0
 //         )
 
-//         val nullValueLogin = LoginRecord(
+//         val nullValueLogin = Login(
 //                 guid = "",
 //                 hostname = "https://www.test.org",
 //                 httpRealm = "Some Other Realm",
@@ -472,7 +472,7 @@
 //         val test = getTestStore()
 //         test.unlock(encryptionKey)
 
-//         val savedLogin1 = LoginRecord(
+//         val savedLogin1 = Login(
 //                 guid = "bbbbb",
 //                 hostname = "https://www.foo.org",
 //                 httpRealm = "Some Realm",
@@ -489,7 +489,7 @@
 
 //         test.add(savedLogin1)
 
-//         val dupeLogin = LoginRecord(
+//         val dupeLogin = Login(
 //                 guid = "",
 //                 hostname = "https://www.foo.org",
 //                 httpRealm = "Some Realm",
@@ -517,7 +517,7 @@
 //         test.unlock(encryptionKey)
 
 //         expectException(LoginsStorageErrorException.NoSuchRecord::class.java) {
-//             test.update(LoginRecord(
+//             test.update(Login(
 //                     guid = "123412341234",
 //                     hostname = "https://www.foo.org",
 //                     httpRealm = "Some Realm",
@@ -566,7 +566,7 @@
 //         assert(toUpdate.timeLastUsed < record.timeLastUsed)
 //         assert(toUpdate.timeLastUsed < record.timePasswordChanged)
 
-//         val specificID = test.add(LoginRecord(
+//         val specificID = test.add(Login(
 //                 guid = "123412341234",
 //                 hostname = "http://www.bar.com",
 //                 formSubmitUrl = "http://login.bar.com",
@@ -603,9 +603,9 @@
 //     }
 
 //     companion object {
-//         val INVALID_RECORDS: List<LoginRecord> = listOf(
+//         val INVALID_RECORDS: List<Login> = listOf(
 //                 // Invalid formSubmitUrl
-//                 LoginRecord(
+//                 Login(
 //                         guid = "",
 //                         hostname = "https://www.foo.org",
 //                         httpRealm = "",
@@ -620,7 +620,7 @@
 //                         timePasswordChanged = 0
 //                 ),
 //                 // Neither formSubmitUrl nor httpRealm
-//                 LoginRecord(
+//                 Login(
 //                         guid = "",
 //                         hostname = "https://www.foo.org",
 //                         httpRealm = "",
@@ -635,7 +635,7 @@
 //                         timePasswordChanged = 0
 //                 ),
 //                 // Empty password
-//                 LoginRecord(
+//                 Login(
 //                         guid = "",
 //                         hostname = "https://www.foo.org",
 //                         httpRealm = "Some Realm",
@@ -650,7 +650,7 @@
 //                         timePasswordChanged = 0
 //                 ),
 //                 // Empty hostname
-//                 LoginRecord(
+//                 Login(
 //                         guid = "",
 //                         hostname = "",
 //                         httpRealm = "Some Realm",

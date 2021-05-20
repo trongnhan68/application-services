@@ -8,7 +8,7 @@
 use cli_support::fxa_creds::{get_cli_fxa, get_default_fxa_config};
 use cli_support::prompt::{prompt_char, prompt_string, prompt_usize};
 
-use logins::{Login, PasswordStore};
+use logins::{Login, LoginStore};
 use prettytable::{cell, row, Cell, Row, Table};
 use rusqlite::NO_PARAMS;
 use sync15::EngineSyncAssociation;
@@ -26,7 +26,7 @@ fn read_login() -> Login {
     let username_field = prompt_string("username_field").unwrap_or_default();
     let password_field = prompt_string("password_field").unwrap_or_default();
     let record = Login {
-        guid: Guid::random(),
+        id: Guid::random().to_string(),
         username,
         password,
         username_field,
@@ -117,7 +117,7 @@ fn timestamp_to_string(milliseconds: i64) -> String {
     dtl.format("%l:%M:%S %p%n%h %e, %Y").to_string()
 }
 
-fn show_sql(s: &PasswordStore, sql: &str) -> Result<()> {
+fn show_sql(s: &LoginStore, sql: &str) -> Result<()> {
     use rusqlite::types::Value;
     let conn = s.conn();
     let mut stmt = conn.prepare(sql)?;
@@ -155,7 +155,7 @@ fn show_sql(s: &PasswordStore, sql: &str) -> Result<()> {
     Ok(())
 }
 
-fn show_all(store: &PasswordStore) -> Result<Vec<String>> {
+fn show_all(store: &LoginStore) -> Result<Vec<String>> {
     let records = store.list()?;
 
     let mut table = prettytable::Table::new();
@@ -181,11 +181,11 @@ fn show_all(store: &PasswordStore) -> Result<Vec<String>> {
 
     let mut v = Vec::with_capacity(records.len());
     let mut record_copy = records.clone();
-    record_copy.sort_by(|a, b| a.guid.cmp(&b.guid));
+    record_copy.sort_by(|a, b| a.guid().cmp(&b.guid()));
     for rec in records.iter() {
         table.add_row(row![
             r->v.len(),
-            Fr->&rec.guid,
+            Fr->&rec.guid(),
             &rec.username,
             Fd->&rec.password,
 
@@ -205,13 +205,13 @@ fn show_all(store: &PasswordStore) -> Result<Vec<String>> {
                 timestamp_to_string(rec.time_last_used)
             }
         ]);
-        v.push(rec.guid.clone());
+        v.push(rec.guid().to_string());
     }
     table.printstd();
     Ok(v)
 }
 
-fn prompt_record_id(s: &PasswordStore, action: &str) -> Result<Option<String>> {
+fn prompt_record_id(s: &LoginStore, action: &str) -> Result<Option<String>> {
     let index_to_id = show_all(s)?;
     let input = if let Some(input) = prompt_usize(&format!("Enter (idx) of record to {}", action)) {
         input
@@ -280,7 +280,7 @@ fn main() -> Result<()> {
     // TODO: allow users to use stage/etc.
     let cli_fxa = get_cli_fxa(get_default_fxa_config(), cred_file)?;
 
-    let store = PasswordStore::new(db_path, encryption_key)?;
+    let store = LoginStore::new(db_path, encryption_key)?;
 
     log::info!("Store has {} passwords", store.list()?.len());
 

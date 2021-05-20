@@ -3,7 +3,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 use crate::error::*;
-use crate::login::{LocalLogin, Login, LoginRecord, MirrorLogin, SyncLoginData, SyncStatus};
+use crate::login::{LocalLogin, Login, MirrorLogin, SyncLoginData, SyncStatus};
 use crate::schema;
 use crate::update_plan::UpdatePlan;
 use crate::util;
@@ -455,15 +455,13 @@ impl LoginDb {
         rows.collect::<Result<_>>()
     }
     /// Follows try_query_row and returns None instead of erroring if no such row exists
-    pub fn get_by_id(&self, id: &str) -> Result<Option<LoginRecord>> {
-        Ok(self
-            .try_query_row(
-                &GET_BY_GUID_SQL,
-                &[(":guid", &id as &dyn ToSql)],
-                Login::from_row,
-                true,
-            )?
-            .map(|login| login.into()))
+    pub fn get_by_id(&self, id: &str) -> Result<Option<Login>> {
+        self.try_query_row(
+            &GET_BY_GUID_SQL,
+            &[(":guid", &id as &dyn ToSql)],
+            Login::from_row,
+            true,
+        )
     }
 
     pub fn touch(&self, id: &str) -> Result<()> {
@@ -498,8 +496,8 @@ impl LoginDb {
         // Allow an empty GUID to be passed to indicate that we should generate
         // one. (Note that the FFI, does not require that the `id` field be
         // present in the JSON, and replaces it with an empty string if missing).
-        if login.guid.is_empty() {
-            login.guid = Guid::random()
+        if login.guid().is_empty() {
+            login.id = Guid::random().to_string()
         }
 
         // Fill in default metadata.
@@ -563,7 +561,7 @@ impl LoginDb {
                 ":password_field": login.password_field,
                 ":username": login.username,
                 ":password": login.password,
-                ":guid": login.guid,
+                ":guid": login.guid(),
                 ":time_created": login.time_created,
                 ":times_used": login.times_used,
                 ":time_last_used": login.time_last_used,
@@ -574,9 +572,9 @@ impl LoginDb {
         if rows_changed == 0 {
             log::error!(
                 "Record {:?} already exists (use `update` to update records, not add)",
-                login.guid
+                login.guid()
             );
-            throw!(ErrorKind::DuplicateGuid(login.guid.into_string()));
+            throw!(ErrorKind::DuplicateGuid(login.guid().into_string()));
         }
         tx.commit()?;
         Ok(login)
@@ -655,14 +653,14 @@ impl LoginDb {
                     login = l;
                 }
                 Err(e) => {
-                    log::warn!("Skipping login {} as it is invalid ({}).", login.guid, e);
+                    log::warn!("Skipping login {} as it is invalid ({}).", login.guid(), e);
                     fixup_errors.push(e.label().into());
                     num_failed_fixup += 1;
                     continue;
                 }
             };
             // Now we can safely insert it, knowing that it's valid data.
-            let old_guid = &login.guid; // Keep the old GUID around so we can debug errors easily.
+            let old_guid = login.guid(); // Keep the old GUID around so we can debug errors easily.
             let guid = if old_guid.is_valid_for_sync_server() {
                 old_guid.clone()
             } else {
@@ -782,7 +780,7 @@ impl LoginDb {
                 ":form_submit_url": login.form_submit_url,
                 ":username_field": login.username_field,
                 ":password_field": login.password_field,
-                ":guid": login.guid,
+                ":guid": login.guid(),
                 ":now_millis": now_ms,
             },
         )?;
@@ -838,7 +836,7 @@ impl LoginDb {
                     )
              )",
             named_params! {
-                ":guid": &login.guid,
+                ":guid": &login.guid(),
                 ":hostname": &login.hostname,
                 ":username": &login.username,
                 ":http_realm": login.http_realm.as_ref(),
@@ -1090,8 +1088,8 @@ impl LoginDb {
                     if let Some(dupe) = self.find_dupe(&upstream)? {
                         log::debug!(
                             "  Incoming record {} was is a dupe of local record {}",
-                            upstream.guid,
-                            dupe.guid
+                            upstream.guid(),
+                            dupe.guid()
                         );
                         plan.plan_two_way_merge(&dupe, (upstream, upstream_time));
                     } else {
@@ -1393,7 +1391,7 @@ mod tests {
     fn test_check_valid_with_no_dupes() {
         let db = LoginDb::open_in_memory(Some("testing")).unwrap();
         db.add(Login {
-            guid: "dummy_000001".into(),
+            id: "dummy_000001".into(),
             form_submit_url: Some("https://www.example.com".into()),
             hostname: "https://www.example.com".into(),
             http_realm: None,
@@ -1405,7 +1403,7 @@ mod tests {
 
         let unique_login_guid = Guid::empty();
         let unique_login = Login {
-            guid: unique_login_guid.clone(),
+            id: unique_login_guid.to_string(),
             form_submit_url: None,
             hostname: "https://www.example.com".into(),
             http_realm: Some("https://www.example.com".into()),
@@ -1415,7 +1413,7 @@ mod tests {
         };
 
         let duplicate_login = Login {
-            guid: Guid::empty(),
+            id: Guid::empty().into(),
             form_submit_url: Some("https://www.example.com".into()),
             hostname: "https://www.example.com".into(),
             http_realm: None,
@@ -1425,7 +1423,7 @@ mod tests {
         };
 
         let updated_login = Login {
-            guid: unique_login_guid,
+            id: unique_login_guid.to_string(),
             form_submit_url: None,
             hostname: "https://www.example.com".into(),
             http_realm: Some("https://www.example.com".into()),
@@ -1482,7 +1480,7 @@ mod tests {
     fn test_unicode_submit() {
         let db = LoginDb::open_in_memory(Some("testing")).unwrap();
         db.add(Login {
-            guid: "dummy_000001".into(),
+            id: "dummy_000001".into(),
             form_submit_url: Some("http://😍.com".into()),
             hostname: "http://😍.com".into(),
             http_realm: None,
@@ -1509,7 +1507,7 @@ mod tests {
     fn test_unicode_realm() {
         let db = LoginDb::open_in_memory(Some("testing")).unwrap();
         db.add(Login {
-            guid: "dummy_000001".into(),
+            id: "dummy_000001".into(),
             form_submit_url: None,
             hostname: "http://😍.com".into(),
             http_realm: Some("😍😍".into()),
@@ -1744,12 +1742,12 @@ mod tests {
         );
 
         // Removing added login so the test cases below don't fail
-        delete_logins(&db, &[login.guid.into_string()]).unwrap();
+        delete_logins(&db, &[login.guid().into_string()]).unwrap();
 
         // Setting up test cases
         let valid_login_guid1: Guid = Guid::random();
         let valid_login1 = Login {
-            guid: valid_login_guid1,
+            id: valid_login_guid1.to_string(),
             form_submit_url: Some("https://www.example.com".into()),
             hostname: "https://www.example.com".into(),
             http_realm: None,
@@ -1759,7 +1757,7 @@ mod tests {
         };
         let valid_login_guid2: Guid = Guid::random();
         let valid_login2 = Login {
-            guid: valid_login_guid2,
+            id: valid_login_guid2.to_string(),
             form_submit_url: Some("https://www.example2.com".into()),
             hostname: "https://www.example2.com".into(),
             http_realm: None,
@@ -1769,7 +1767,7 @@ mod tests {
         };
         let valid_login_guid3: Guid = Guid::random();
         let valid_login3 = Login {
-            guid: valid_login_guid3,
+            id: valid_login_guid3.to_string(),
             form_submit_url: Some("https://www.example3.com".into()),
             hostname: "https://www.example3.com".into(),
             http_realm: None,
@@ -1779,7 +1777,7 @@ mod tests {
         };
         let duplicate_login_guid: Guid = Guid::random();
         let duplicate_login = Login {
-            guid: duplicate_login_guid,
+            id: duplicate_login_guid.to_string(),
             form_submit_url: Some("https://www.example.com".into()),
             hostname: "https://www.example.com".into(),
             http_realm: None,
@@ -1857,7 +1855,7 @@ mod tests {
             if tc.has_populated_metrics {
                 let mut guids = Vec::new();
                 for login in &tc.logins {
-                    guids.push(login.clone().guid.into_string());
+                    guids.push(login.clone().guid().into_string());
                 }
 
                 assert_eq!(

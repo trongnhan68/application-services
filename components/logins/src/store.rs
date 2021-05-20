@@ -4,7 +4,6 @@
 use crate::db::{LoginDb, LoginsSyncEngine, MigrationMetrics};
 use crate::error::*;
 use crate::login::Login;
-use crate::LoginRecord;
 use std::cell::Cell;
 use std::path::Path;
 use sync15::{
@@ -14,12 +13,12 @@ use sync15::{
 
 // This store is a bundle of state to manage the login DB and to help the
 // SyncEngine.
-pub struct PasswordStore {
+pub struct LoginStore {
     pub db: LoginDb,
     pub mem_cached_state: Cell<MemoryCachedState>,
 }
 
-impl PasswordStore {
+impl LoginStore {
     pub fn new(path: impl AsRef<Path>, encryption_key: &str) -> Result<Self> {
         let db = LoginDb::open(path, Some(encryption_key))?;
         Ok(Self {
@@ -44,37 +43,20 @@ impl PasswordStore {
         })
     }
 
-    pub fn list(&self) -> Result<Vec<LoginRecord>> {
-        let logins = self.db.get_all()?.into_iter().map(|x| x.into()).collect();
-        Ok(logins)
+    pub fn list(&self) -> Result<Vec<Login>> {
+        self.db.get_all()
     }
 
-    pub fn get(&self, id: &str) -> Result<Option<LoginRecord>> {
+    pub fn get(&self, id: &str) -> Result<Option<Login>> {
         self.db.get_by_id(id)
     }
 
-    pub fn get_by_base_domain(&self, base_domain: &str) -> Result<Vec<LoginRecord>> {
-        let logins = self
-            .db
-            .get_by_base_domain(base_domain)?
-            .into_iter()
-            .map(|x| x.into())
-            .collect();
-        Ok(logins)
+    pub fn get_by_base_domain(&self, base_domain: &str) -> Result<Vec<Login>> {
+        self.db.get_by_base_domain(base_domain)
     }
 
-    pub fn potential_dupes_ignoring_username(
-        &self,
-        record: LoginRecord,
-    ) -> Result<Vec<LoginRecord>> {
-        let login = record.into();
-        let logins = self
-            .db
-            .potential_dupes_ignoring_username(&login)?
-            .into_iter()
-            .map(|x| x.into())
-            .collect();
-        Ok(logins)
+    pub fn potential_dupes_ignoring_username(&self, login: Login) -> Result<Vec<Login>> {
+        self.db.potential_dupes_ignoring_username(&login)
     }
 
     pub fn touch(&self, id: &str) -> Result<()> {
@@ -101,19 +83,16 @@ impl PasswordStore {
         Ok(())
     }
 
-    pub fn update(&self, record: LoginRecord) -> Result<()> {
-        let login: Login = record.into();
+    pub fn update(&self, login: Login) -> Result<()> {
         self.db.update(login)
     }
 
-    pub fn add(&self, record: LoginRecord) -> Result<String> {
+    pub fn add(&self, login: Login) -> Result<String> {
         // Just return the record's ID (which we may have generated).
-        let login: Login = record.into();
-        self.db.add(login).map(|record| record.guid.into_string())
+        self.db.add(login).map(|record| record.guid().into_string())
     }
 
-    pub fn import_multiple(&self, records: Vec<LoginRecord>) -> Result<MigrationMetrics> {
-        let logins: Vec<Login> = records.into_iter().map(LoginRecord::into).collect();
+    pub fn import_multiple(&self, logins: Vec<Login>) -> Result<MigrationMetrics> {
         self.db.import_multiple(&logins)
     }
 
@@ -174,22 +153,20 @@ impl PasswordStore {
         &self.db.db
     }
 
-    pub fn check_valid_with_no_dupes(&self, record: LoginRecord) -> Result<()> {
-        let login: Login = record.into();
-        self.db.check_valid_with_no_dupes(&login)
+    pub fn check_valid_with_no_dupes(&self, login: &Login) -> Result<()> {
+        self.db.check_valid_with_no_dupes(login)
     }
 }
 
 #[cfg(test)]
 mod test {
     use super::*;
-    // xxx - TODO - Convert these to leverage/expect LoginRecord as this breaks right now
     use crate::util;
     use more_asserts::*;
     use std::time::SystemTime;
     // Doesn't check metadata fields
-    fn assert_logins_equiv(a: &LoginRecord, b: &LoginRecord) {
-        assert_eq!(b.guid, a.guid);
+    fn assert_logins_equiv(a: &Login, b: &Login) {
+        assert_eq!(b.guid(), a.guid());
         assert_eq!(b.hostname, a.hostname);
         assert_eq!(b.form_submit_url, a.form_submit_url);
         assert_eq!(b.http_realm, a.http_realm);
@@ -201,36 +178,36 @@ mod test {
 
     #[test]
     fn test_general() {
-        let store = PasswordStore::new_in_memory(Some("secret")).unwrap();
+        let store = LoginStore::new_in_memory(Some("secret")).unwrap();
         let list = store.list().expect("Grabbing Empty list to work");
         assert_eq!(list.len(), 0);
         let start_us = util::system_time_ms_i64(SystemTime::now());
 
-        let a = LoginRecord {
-            guid: "aaaaaaaaaaaa".into(),
+        let a = Login {
+            id: "aaaaaaaaaaaa".into(),
             hostname: "https://www.example.com".into(),
             form_submit_url: Some("https://www.example.com".into()),
             username: "coolperson21".into(),
             password: "p4ssw0rd".into(),
             username_field: "user_input".into(),
             password_field: "pass_input".into(),
-            ..LoginRecord::default()
+            ..Login::default()
         };
 
-        let b = LoginRecord {
+        let b = Login {
             // Note: no ID, should be autogenerated for us
             hostname: "https://www.example2.com".into(),
             http_realm: Some("Some String Here".into()),
             username: "asdf".into(),
             password: "fdsa".into(),
-            ..LoginRecord::default()
+            ..Login::default()
         };
         let a_id = store.add(a.clone()).expect("added a");
         let b_id = store.add(b.clone()).expect("added b");
 
-        assert_eq!(a_id, a.guid);
+        assert_eq!(a_id, a.guid());
 
-        assert_ne!(b_id, b.guid, "Should generate guid when none provided");
+        assert_ne!(b_id, b.guid(), "Should generate guid when none provided");
 
         let a_from_db = store
             .get(&a_id)
@@ -250,8 +227,8 @@ mod test {
 
         assert_logins_equiv(
             &b_from_db,
-            &LoginRecord {
-                guid: b_id.to_string(),
+            &Login {
+                id: b_id.to_string(),
                 ..b.clone()
             },
         );
@@ -265,8 +242,8 @@ mod test {
 
         let mut expect = vec![a_from_db, b_from_db.clone()];
 
-        list.sort_by(|a, b| b.guid.cmp(&a.guid));
-        expect.sort_by(|a, b| b.guid.cmp(&a.guid));
+        list.sort_by(|a, b| b.guid().cmp(&a.guid()));
+        expect.sort_by(|a, b| b.guid().cmp(&a.guid()));
         assert_eq!(list, expect);
 
         store.delete(&a_id).expect("Successful delete");
@@ -291,9 +268,9 @@ mod test {
         assert_eq!(list.len(), 0);
 
         let now_us = util::system_time_ms_i64(SystemTime::now());
-        let b2 = LoginRecord {
+        let b2 = Login {
             password: "newpass".into(),
-            guid: b_id.to_string(),
+            id: b_id.to_string(),
             ..b
         };
 
@@ -315,7 +292,7 @@ mod test {
 
     #[test]
     fn test_rekey() {
-        let store = PasswordStore::new_in_memory(Some("secret")).unwrap();
+        let store = LoginStore::new_in_memory(Some("secret")).unwrap();
         store.rekey_database("new_encryption_key").unwrap();
         let list = store.list().expect("Grabbing Empty list to work");
         assert_eq!(list.len(), 0);
@@ -325,5 +302,5 @@ mod test {
 #[test]
 fn test_send() {
     fn ensure_send<T: Send>() {}
-    ensure_send::<PasswordStore>();
+    ensure_send::<LoginStore>();
 }
